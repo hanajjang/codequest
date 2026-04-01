@@ -359,3 +359,68 @@
     width: 100%;
   }
 }
+
+.level-status {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.level-name {
+  margin: 0.5rem 0 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-purple);
+}
+
+.level-desc {
+  margin: 0.25rem 0 0 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.progress-label {
+  color: var(--text-secondary);
+}
+
+.progress-xp {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.level-goal {
+  margin: 0.75rem 0 0 0;
+  font-size: 12px;
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+
+.stat-unit {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.project-time {
+  margin: 0.5rem 0 0 0;
+  font-size: 12px;
+  color: var(--accent-orange);
+  font-weight: 500;
+}
+
+.project-xp {
+  margin: 0.25rem 0 0 0;
+  font-size: 12px;
+  color: var(--accent-green);
+  font-weight: 600;
+}
