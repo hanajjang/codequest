@@ -1,11 +1,10 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent'
 
 console.log('API Key exists:', !!GEMINI_API_KEY)
 
 export const analyzeCode = async (code, language, missionDescription) => {
   if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set')
     return {
       isCorrect: false,
       feedback: '⚠️ API 키가 설정되지 않았습니다.',
@@ -13,7 +12,7 @@ export const analyzeCode = async (code, language, missionDescription) => {
     }
   }
 
-  const prompt = `You are a code mentor. Analyze this ${language} code and provide feedback in Korean.
+  const prompt = `You are a code mentor. Analyze this ${language} code.
 
 Mission: ${missionDescription}
 
@@ -23,13 +22,10 @@ ${code}
 \`\`\`
 
 Respond ONLY with JSON:
-{"isCorrect": boolean, "feedback": "string", "correction": "string or null"}`
+{"isCorrect": boolean, "feedback": "string in Korean", "correction": null}`
 
   try {
-    const url = `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`
-    console.log('Calling Gemini API...')
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,11 +39,7 @@ Respond ONLY with JSON:
       })
     })
 
-    console.log('API Response status:', response.status)
-
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('API Error:', errorText)
       throw new Error(`API Error: ${response.status}`)
     }
 
@@ -55,10 +47,10 @@ Respond ONLY with JSON:
     const text = data.candidates[0].content.parts[0].text
     return JSON.parse(text)
   } catch (error) {
-    console.error('Gemini error:', error.message)
+    console.error('Error:', error.message)
     return {
       isCorrect: false,
-      feedback: `분석 오류: ${error.message}`,
+      feedback: `오류: ${error.message}`,
       correction: null
     }
   }
@@ -66,13 +58,12 @@ Respond ONLY with JSON:
 
 export const getChatResponse = async (question, language, missionDescription, concepts) => {
   if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set')
     return '⚠️ API 키가 설정되지 않았습니다.'
   }
 
   const conceptsList = Array.isArray(concepts) ? concepts.join(', ') : String(concepts)
   
-  const prompt = `프로그래밍 튜터로서 학생의 질문에 답변하세요.
+  const prompt = `프로그래밍 튜터로서 답변하세요.
 
 언어: ${language}
 미션: ${missionDescription}
@@ -80,13 +71,10 @@ export const getChatResponse = async (question, language, missionDescription, co
 
 질문: ${question}
 
-한국어로 친절하고 구체적으로 2-3문단으로 답변하세요.`
+한국어로 2-3문단으로 답변하세요.`
 
   try {
-    const url = `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`
-    console.log('Calling Chat API...')
-    
-    const response = await fetch(url, {
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -100,18 +88,14 @@ export const getChatResponse = async (question, language, missionDescription, co
       })
     })
 
-    console.log('Chat API Response status:', response.status)
-
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Chat API Error:', errorText)
-      throw new Error(`Chat Error: ${response.status}`)
+      throw new Error(`API Error: ${response.status}`)
     }
 
     const data = await response.json()
     return data.candidates[0].content.parts[0].text.trim()
   } catch (error) {
-    console.error('Chat error:', error.message)
+    console.error('Error:', error.message)
     return `오류: ${error.message}`
   }
 }
