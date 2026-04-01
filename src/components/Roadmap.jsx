@@ -34,8 +34,13 @@ export default function Roadmap() {
     <div className="roadmap">
       <div className="roadmap-container">
         <div className="roadmap-header">
-          <h1>🗺️ 코드 맵 - 학습 로드맵</h1>
-          <p>RPG 게임처럼 각 영역을 정복하며 배우세요</p>
+          <div>
+            <h1>🗺️ 코드 맵 - 학습 로드맵</h1>
+            <p>RPG 게임처럼 각 영역을 정복하며 배우세요</p>
+          </div>
+          <button className="btn-back-roadmap" onClick={() => navigate('/dashboard')}>
+            ← 대시보드로 돌아가기
+          </button>
         </div>
 
         <div className="legend">

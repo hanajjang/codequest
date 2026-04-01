@@ -3,6 +3,7 @@ import LandingPage from './components/LandingPage'
 import Dashboard from './components/Dashboard'
 import Roadmap from './components/Roadmap'
 import Workspace from './components/Workspace'
+import Settings from './components/Settings'
 import './styles/global.css'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/workspace/:projectId" element={<Workspace />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

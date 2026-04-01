@@ -36,7 +36,14 @@ export default function Dashboard() {
             <h1>{nickname}님의 학습 현황</h1>
             <p>{new Date().toLocaleDateString('ko-KR')}</p>
           </div>
-          <button className="btn-settings">⚙️ 설정</button>
+          <div className="header-buttons">
+            <button className="btn-roadmap" onClick={() => navigate('/roadmap')}>
+              🗺️ 로드맵
+            </button>
+            <button className="btn-settings" onClick={() => navigate('/settings')}>
+              ⚙️ 설정
+            </button>
+          </div>
         </div>
 
         <div className="main-grid">
@@ -104,7 +111,9 @@ export default function Dashboard() {
         <div className="card full-width">
           <div className="card-header">
             <h2>다음 학습할 프로젝트</h2>
-            <button className="btn-link">전체 로드맵 →</button>
+            <button className="btn-link" onClick={() => navigate('/roadmap')}>
+              전체 로드맵 →
+            </button>
           </div>
 
           <div className="projects-grid">

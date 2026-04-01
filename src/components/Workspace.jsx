@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { missions } from '../data/missions'
 import { analyzeCode } from '../lib/gemini'
 import { useUserStore } from '../store/userStore'
@@ -7,10 +7,12 @@ import '../styles/Workspace.css'
 
 export default function Workspace() {
   const { projectId } = useParams()
+  const navigate = useNavigate()
   const { addXP, completeProject } = useUserStore()
   const [isResizing, setIsResizing] = useState(false)
   const [leftWidth, setLeftWidth] = useState(38)
   const containerRef = useRef(null)
+  const chatEndRef = useRef(null)
 
   const mission = missions.find((m) => m.id === projectId)
   const [currentStep, setCurrentStep] = useState(0)
@@ -25,6 +27,7 @@ export default function Workspace() {
       text: mission?.steps[0]?.description
     }
   ])
+  const [chatInput, setChatInput] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [terminalOutput, setTerminalOutput] = useState('')
 
@@ -34,6 +37,10 @@ export default function Workspace() {
     if (!step) return
     setCode(step.template)
   }, [currentStep])
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   const handleMouseDown = (e) => {
     setIsResizing(true)
@@ -63,6 +70,32 @@ export default function Workspace() {
       }
     }
   }, [isResizing])
+
+  const handleChatSend = () => {
+    if (!chatInput.trim()) return
+
+    setMessages((prev) => [
+      ...prev,
+      { type: 'user', text: chatInput }
+    ])
+
+    const responses = [
+      '좋은 질문입니다! ' + chatInput,
+      '그 부분은 ' + chatInput + '과 관련이 있어요.',
+      '맞습니다! ' + chatInput.substring(0, 20) + '...',
+      '더 자세히 설명하자면, ' + chatInput,
+      '그것은 좋은 아이디어입니다!'
+    ]
+
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { type: 'mentor', text: responses[Math.floor(Math.random() * responses.length)] }
+      ])
+    }, 500)
+
+    setChatInput('')
+  }
 
   const handleRun = async () => {
     setIsAnalyzing(true)
@@ -98,12 +131,36 @@ export default function Workspace() {
   const handleSubmit = () => {
     if (currentStep < mission.steps.length - 1) {
       setCurrentStep(currentStep + 1)
-      setMessages([])
+      setMessages([
+        {
+          type: 'mentor',
+          text: `좋습니다! 다음 단계로 넘어갔습니다.`
+        },
+        {
+          type: 'mentor',
+          text: mission.steps[currentStep + 1]?.description
+        }
+      ])
     } else {
       addXP(mission.rewards.xp)
       completeProject(projectId)
       alert('미션 완료! 🎉')
+      navigate('/dashboard')
     }
+  }
+
+  const handleReset = () => {
+    setCode(step.template)
+    setMessages([
+      {
+        type: 'mentor',
+        text: `코드가 초기화되었습니다. 다시 시작해보세요!`
+      }
+    ])
+  }
+
+  const handleSave = () => {
+    alert('코드가 저장되었습니다! 📝')
   }
 
   if (!mission) return <div>미션을 찾을 수 없습니다.</div>
@@ -129,11 +186,18 @@ export default function Workspace() {
               </div>
             </div>
           ))}
+          <div ref={chatEndRef} />
         </div>
 
         <div className="chat-input">
-          <input type="text" placeholder="질문 입력..." />
-          <button>전송</button>
+          <input
+            type="text"
+            placeholder="질문 입력..."
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleChatSend()}
+          />
+          <button onClick={handleChatSend}>전송</button>
         </div>
       </div>
 
@@ -182,8 +246,10 @@ export default function Workspace() {
           <button className="btn-submit" onClick={handleSubmit}>
             ✅ {currentStep === mission.steps.length - 1 ? '완료' : '다음'}
           </button>
-          <button className="btn-save">💾 저장</button>
-          <button className="btn-reset" onClick={() => setCode(step.template)}>
+          <button className="btn-save" onClick={handleSave}>
+            💾 저장
+          </button>
+          <button className="btn-reset" onClick={handleReset}>
             ↩ 리셋
           </button>
         </div>
