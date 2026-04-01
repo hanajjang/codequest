@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { missions } from '../data/missions'
-import { analyzeCode, getChatResponse } from '../lib/gemini'
+import { analyzeCode } from '../lib/gemini'
 import { useUserStore } from '../store/userStore'
 import '../styles/Workspace.css'
 
@@ -29,7 +29,6 @@ export default function Workspace() {
   ])
   const [chatInput, setChatInput] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [isChatLoading, setIsChatLoading] = useState(false)
   const [terminalOutput, setTerminalOutput] = useState('')
 
   const step = mission?.steps[currentStep]
@@ -72,7 +71,7 @@ export default function Workspace() {
     }
   }, [isResizing])
 
-  const handleChatSend = async () => {
+  const handleChatSend = () => {
     if (!chatInput.trim()) return
 
     setMessages((prev) => [
@@ -80,30 +79,17 @@ export default function Workspace() {
       { type: 'user', text: chatInput }
     ])
 
-    setIsChatLoading(true)
-    const userQuestion = chatInput
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          type: 'mentor',
+          text: '안녕하세요! 현재 AI 채팅이 점검 중입니다. 우측의 "Run" 버튼으로 코드를 분석해주세요. 곧 AI 채팅 기능을 활성화하겠습니다! 💙'
+        }
+      ])
+    }, 300)
+
     setChatInput('')
-
-    try {
-      const response = await getChatResponse(
-        userQuestion,
-        mission.language,
-        step.description,
-        step.concepts
-      )
-
-      setMessages((prev) => [
-        ...prev,
-        { type: 'mentor', text: response }
-      ])
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        { type: 'mentor', text: '죄송합니다. 다시 시도해주세요.' }
-      ])
-    }
-
-    setIsChatLoading(false)
   }
 
   const handleRun = async () => {
@@ -195,29 +181,18 @@ export default function Workspace() {
               </div>
             </div>
           ))}
-          {isChatLoading && (
-            <div className="message mentor">
-              <span className="avatar">🤖</span>
-              <div className="bubble loading">
-                <p>생각 중입니다...</p>
-              </div>
-            </div>
-          )}
           <div ref={chatEndRef} />
         </div>
 
         <div className="chat-input">
           <input
             type="text"
-            placeholder="질문 입력..."
+            placeholder="질문 입력... (현재 점검 중)"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && handleChatSend()}
-            disabled={isChatLoading}
+            onKeyPress={(e) => e.key === 'Enter' && handleChatSend()}
           />
-          <button onClick={handleChatSend} disabled={isChatLoading}>
-            {isChatLoading ? '...' : '전송'}
-          </button>
+          <button onClick={handleChatSend}>전송</button>
         </div>
       </div>
 
