@@ -1,16 +1,14 @@
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'
 
-// 디버깅 로그
 console.log('API Key exists:', !!GEMINI_API_KEY)
-console.log('API Key length:', GEMINI_API_KEY?.length)
 
 export const analyzeCode = async (code, language, missionDescription) => {
   if (!GEMINI_API_KEY) {
     console.error('GEMINI_API_KEY is not set')
     return {
       isCorrect: false,
-      feedback: '⚠️ API 키가 설정되지 않았습니다. 관리자에게 문의하세요.',
+      feedback: '⚠️ API 키가 설정되지 않았습니다.',
       correction: null
     }
   }
@@ -24,7 +22,7 @@ Code:
 ${code}
 \`\`\`
 
-Respond ONLY with JSON (no markdown):
+Respond ONLY with JSON:
 {"isCorrect": boolean, "feedback": "string", "correction": "string or null"}`
 
   try {
