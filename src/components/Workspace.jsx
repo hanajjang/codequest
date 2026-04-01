@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { missions } from '../data/missions'
-import { analyzeCode } from '../lib/gemini'
+import { analyzeCode, getChatResponse } from '../lib/gemini'
 import { useUserStore } from '../store/userStore'
 import '../styles/Workspace.css'
 
@@ -29,6 +29,7 @@ export default function Workspace() {
   ])
   const [chatInput, setChatInput] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isChatLoading, setIsChatLoading] = useState(false)
   const [terminalOutput, setTerminalOutput] = useState('')
 
   const step = mission?.steps[currentStep]
@@ -71,7 +72,7 @@ export default function Workspace() {
     }
   }, [isResizing])
 
-  const handleChatSend = () => {
+  const handleChatSend = async () => {
     if (!chatInput.trim()) return
 
     setMessages((prev) => [
@@ -79,22 +80,30 @@ export default function Workspace() {
       { type: 'user', text: chatInput }
     ])
 
-    const responses = [
-      '좋은 질문입니다! ' + chatInput,
-      '그 부분은 ' + chatInput + '과 관련이 있어요.',
-      '맞습니다! ' + chatInput.substring(0, 20) + '...',
-      '더 자세히 설명하자면, ' + chatInput,
-      '그것은 좋은 아이디어입니다!'
-    ]
+    setIsChatLoading(true)
+    const userQuestion = chatInput
+    setChatInput('')
 
-    setTimeout(() => {
+    try {
+      const response = await getChatResponse(
+        userQuestion,
+        mission.language,
+        step.description,
+        step.concepts
+      )
+
       setMessages((prev) => [
         ...prev,
-        { type: 'mentor', text: responses[Math.floor(Math.random() * responses.length)] }
+        { type: 'mentor', text: response }
       ])
-    }, 500)
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        { type: 'mentor', text: '죄송합니다. 다시 시도해주세요.' }
+      ])
+    }
 
-    setChatInput('')
+    setIsChatLoading(false)
   }
 
   const handleRun = async () => {
@@ -186,6 +195,14 @@ export default function Workspace() {
               </div>
             </div>
           ))}
+          {isChatLoading && (
+            <div className="message mentor">
+              <span className="avatar">🤖</span>
+              <div className="bubble loading">
+                <p>생각 중입니다...</p>
+              </div>
+            </div>
+          )}
           <div ref={chatEndRef} />
         </div>
 
@@ -195,9 +212,12 @@ export default function Workspace() {
             placeholder="질문 입력..."
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleChatSend()}
+            onKeyPress={(e) => e.key === 'Enter' && !isChatLoading && handleChatSend()}
+            disabled={isChatLoading}
           />
-          <button onClick={handleChatSend}>전송</button>
+          <button onClick={handleChatSend} disabled={isChatLoading}>
+            {isChatLoading ? '...' : '전송'}
+          </button>
         </div>
       </div>
 

@@ -382,3 +382,19 @@
   color: var(--accent-blue);
   background: #EFF6FF;
 }
+
+.bubble.loading {
+  background: #F0F9FF;
+  border-color: var(--accent-blue);
+  border-left: 3px solid var(--accent-blue);
+}
+
+.chat-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-input input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
